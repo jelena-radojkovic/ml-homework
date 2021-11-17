@@ -20,9 +20,7 @@ def calculate_hypothesis(x, theta):
 
 def calculate_plausibility(y, h):
     # sum of [y*ln(h) + (1-y)ln(1-h)]
-    return np.sum(
-        np.matmul(y, np.log2(h)) + np.matmul(np.subtract(np.ones(len(y)), y), np.log2(np.subtract(np.ones(len(h)), h))),
-        axis=0)
+    return np.sum(np.matmul(y, np.log2(h)) + np.matmul(np.subtract(np.ones(len(y)), y), np.log2(np.subtract(np.ones(len(h)), h))), axis=0)
 
 
 def gradient_descent(x, y, theta, learn_rate, mini_batches):
@@ -40,7 +38,7 @@ def gradient_descent(x, y, theta, learn_rate, mini_batches):
         # theta = theta + learn_rate * gradient
         theta = theta + learn_rate * (np.matmul(x_temp.T, (y_temp - h)))
         # theta = np.sum(theta, learn_rate * (np.matmul(x_temp.T, (y_temp-h))))
-    return iters, loss
+    return theta, iters, loss
 
 
 # main:
@@ -68,14 +66,44 @@ Y_Test = Y[int(length * 5. / 6):]
 Y_Train = Y[:int(length * 5. / 6)]
 
 # model 0
-theta_0 = np.zeros(np.shape(X_Train)[1])
+theta = np.zeros(np.shape(X_Train)[1])
 y_train_0 = create_y_dataset(Y_Train, 0)
-iters, loss = gradient_descent(X_Train, y_train_0, theta_0, 0.2, 10)
-print("iters: ", iters)
-print("loss: ", loss)
+# 1x optimals values for learning rate and mini batches
+_, iters1, loss1 = gradient_descent(X_Train, y_train_0, theta, 0.5, 10)
+# 2x optimal value for learning rate and suboptimal values for mini batches
+theta_0, iters2, loss2 = gradient_descent(X_Train, y_train_0, theta, 0.5, 1)
+_, iters3, loss3 = gradient_descent(X_Train, y_train_0, theta, 0.5, 40)
+# 2x suboptimal values for learning rate and optimal mini batches
+_, iters4, loss4 = gradient_descent(X_Train, y_train_0, theta, 0.01, 10)
+_, iters5, loss5 = gradient_descent(X_Train, y_train_0, theta, 1, 10)
 
+plt.xlabel("Iteracija")
+plt.ylabel("Gubitak")
+plt.plot(iters1, loss1, color="red")
+plt.plot(iters2, loss2, color="blue")
+plt.plot(iters3, loss3, color="green")
+plt.plot(iters4, loss4, color="yellow")
+plt.plot(iters5, loss5, color="black")
+plt.show()
 
+# model 1
+y_train_1 = create_y_dataset(Y_Train, 1)
+# 1x optimals values for learning rate and mini batches
+theta_1, _, _ = gradient_descent(X_Train, y_train_1, theta, 0.5, 2)
 
+# model 2
+y_train_2 = create_y_dataset(Y_Train, 2)
+# 1x optimals values for learning rate and mini batches
+theta_2, _, _ = gradient_descent(X_Train, y_train_2, theta, 0.5, 2)
 
-
+# testing
+y_predicted = np.zeros((len(Y_Test),3))
+y_predicted[:,0] = calculate_hypothesis(X_Test, theta_0)
+y_predicted[:,1] = calculate_hypothesis(X_Test, theta_1)
+y_predicted[:,2] = calculate_hypothesis(X_Test, theta_2)
+y_predicted = np.argmax(y_predicted, axis=1)
+correct = np.array(np.where(Y_Test == y_predicted)).ravel()
+print('Correct: ', len(correct))
+print('Wrong: ', len(Y_Test) - len(correct))
+print('Accuracy: ', (len(correct)/len(Y_Test)) * 100, '%')
 
