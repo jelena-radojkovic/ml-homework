@@ -47,39 +47,27 @@ X_Train = X_stand[:int(length * 5. / 6), :]
 Y_Test = Y[int(length * 5. / 6):]
 Y_Train = Y[:int(length * 5. / 6)]
 
-x_train_0 = (X_Train[np.where(Y_Train == 0), :])
-x_train_1 = (X_Train[np.where(Y_Train == 1), :])
-x_train_2 = (X_Train[np.where(Y_Train == 2), :])
+x_train = []
+for i in range(num_classes):
+    x_train.append(X_Train[np.where(Y_Train == i), :])
+    
+means = np.zeros((num_classes, X_Train.shape[1]))
+stds = np.zeros((num_classes, X_Train.shape[1]))
+fis = np.zeros(num_classes)
+# calculating means, stdevs and probability
+for i in range(num_classes):
+    means[i] = np.mean(x_train[i], axis=0)[0]
+    stds[i] = np.std(x_train[i].reshape(-1,5), axis=0)
+    fis[i] = (1. / len(Y_Train)) * (len(np.where(Y_Train == i)[0]))
 
-# calculating means
-means = np.zeros((3, X_Train.shape[1]))
-means[0] = np.mean(x_train_0, axis=0)[0]
-means[1] = np.mean(x_train_1, axis=0)[0]
-means[2] = np.mean(x_train_2, axis=0)[0]
-
-# calculating stds
-stds = np.zeros((3, X_Train.shape[1]))
-stds[0] = np.std(x_train_0.reshape(-1,5), axis=0)
-stds[1] = np.std(x_train_1.reshape(-1,5), axis=0)
-stds[2] = np.std(x_train_2.reshape(-1,5), axis=0)
-
-# calculating fis
-fis = np.zeros(3)
-fis[0] = (1./len(Y_Train))*(len(np.where(Y_Train == 0)[0]))
-fis[1] = (1./len(Y_Train))*(len(np.where(Y_Train == 1)[0]))
-fis[2] = (1./len(Y_Train))*(len(np.where(Y_Train == 2)[0]))
-
+# Train set
 y_predicted = predict(num_classes, X_Train, means, stds, fis)
 correct = np.array(np.where(Y_Train == y_predicted)).ravel()
 num_correct = len(correct)
-print('Correct: ', num_correct)
-print('Wrong: ', len(Y_Train) - num_correct)
 print('Accuracy: ', float(num_correct) / len(Y_Train) * 100, '%')
 
 # Test set
 y_predicted = predict(num_classes, X_Test, means, stds, fis)
 correct = np.array(np.where(Y_Test == y_predicted)).ravel()
 num_correct = len(correct)
-print('Correct: ', num_correct)
-print('Wrong: ', len(Y_Test) - num_correct)
 print('Accuracy: ', (float(num_correct)/len(Y_Test)) * 100, '%')
