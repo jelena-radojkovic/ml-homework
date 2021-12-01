@@ -1,6 +1,12 @@
 import numpy as np
 import pandas as pd
+from matplotlib import pyplot as plt
 import cvxopt
+
+
+def f(x,w,b):
+    # wX + b = 0
+    return (-b - w[0]*x) / w[1]
 
 
 class Svm(object):
@@ -78,11 +84,18 @@ X_Train = X_stand[:int(length * 5. / 6), :]
 Y_Test = Y[int(length * 5. / 6):]
 Y_Train = Y[:int(length * 5. / 6)]
 
-print(X_Train)
-print(Y_Train)
-
 svm = Svm()
 svm.fit(X_Train, Y_Train)
 y_trained = svm.predict(X_Test)
 print(y_trained)
 print(Y_Test)
+
+x_graph = np.linspace(-2, 2, 2)
+y_graph = f(x_graph, svm.w, svm.b)
+
+plt.xlabel("x1")
+plt.ylabel("x2")
+plt.scatter(X_Train[np.where(Y_Train == -1),0], X_Train[np.where(Y_Train == -1),1], color="red")
+plt.scatter(X_Train[np.where(Y_Train == 1),0], X_Train[np.where(Y_Train == 1),1], color="blue")
+plt.plot(x_graph, y_graph, color="black")
+plt.show()
